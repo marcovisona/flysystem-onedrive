@@ -298,20 +298,20 @@ class OneDriveAdapter extends OneDriveUtilityAdapter implements FilesystemAdapte
         $patch = explode('/', $destination);
         $sliced = implode('/', array_slice($patch, 0, -1));
 
+
         if (empty($sliced) && $this->usePath) {
             $sliced = $destination;
         }
 
         try {
-            $promise = $this->graph->createRequest('POST', $endpoint.($this->usePath ? ':' : '').'/copy')
-                ->attachBody([
-                    'name' => $source,
+            $promise = $this->graph->createRequest('POST', $endpoint . ($this->usePath ? ':' : '') . '/copy')
+                ->attachBody(array_merge([
                     'parentReference' => [
-                        'path' => $this->getPathPrefix().(empty($sliced) ? '' : rtrim($sliced, '/').'/'),
-                    ],
-                ])
-                ->executeAsync();
-            $promise->wait();
+                        'path' => $this->getPathPrefix() . (empty($sliced) ? '' : rtrim($sliced, '/') . '/'),
+                    ]
+                ], $this->usePath ? ['name' => end($patch)] : []),
+                )->executeAsync();
+            $result = $promise->wait();
         } catch (Exception $e) {
 
         }
